@@ -1,0 +1,84 @@
+<html>
+
+<head>
+    <style>
+        #root {
+            width: 100vw;
+            height: 100vh;
+        }
+        .translate {
+            position: absolute;
+            bottom: -10px;
+            margin-left:25%;
+            z-index: 9999;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root">
+    </div>
+    
+    <a class="btn btn-primary" href="{{ url_for('translate') }}">translate</a>
+
+<script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
+<script>
+    window.onload = function () {
+        function getUrlParams(url) {
+            let urlStr = url.split('?')[1];
+            const urlSearchParams = new URLSearchParams(urlStr);
+            const result = Object.fromEntries(urlSearchParams.entries());
+            return result;
+        }
+
+        const roomID = getUrlParams(window.location.href)['roomID'] || (Math.floor(Math.random() * 10000) + "");
+        const userID = Math.floor(Math.random() * 10000) + "";
+        const userName = "userName" + userID;
+        const appID = 1270653852;
+        const serverSecret = "98ec6b7e434aa6a74f18286c2b40cf5f";
+        const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(appID, serverSecret, roomID, userID, userName);
+
+        const zp = ZegoUIKitPrebuilt.create(kitToken);
+        zp.joinRoom({
+            container: document.querySelector("#root"),
+            sharedLinks: [{
+                name: 'Personal link',
+                url: window.location.protocol + '//' + window.location.host  + window.location.pathname + '?roomID=' + roomID,
+            }],
+            scenario: {
+                mode: ZegoUIKitPrebuilt.VideoConference,
+            },
+            turnOnMicrophoneWhenJoining: true,
+            turnOnCameraWhenJoining: false,
+            showMyCameraToggleButton: false,
+            showMyMicrophoneToggleButton: true,
+            showAudioVideoSettingsButton: true,
+            showScreenSharingButton: false,
+            showTextChat: true,
+            showUserList: true,
+            maxUsers: 2,
+            layout: "Auto",
+            showLayoutButton: false,
+        });
+    }
+    const socket = io();
+socket.on('connect', () => {
+    console.log('Connected to server');
+});
+
+socket.on('translated_text', (data) => {
+    console.log('Received translated text:', data.translated_text);
+    // Handle received translated text
+    window.alert(data.translated_text);
+});
+
+   
+</script>
+
+</html>
